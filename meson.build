@@ -1,3 +1,9 @@
-project('saba', 'c', version: '1.0.0')
+project('saba', 'c', default_options: ['c_std=c23'])
 
-executable('saba', 'main.c')
+notcurses_dep = dependency('notcurses-core')
+
+executable(
+    'saba',
+    'main.c',
+    dependencies: notcurses_dep
+)
