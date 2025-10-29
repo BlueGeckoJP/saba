@@ -12,8 +12,8 @@ int
 main(void)
 {
   notcurses_options opts = {};
-  struct notcurses* nc = notcurses_core_init(&opts, NULL);
-  if (nc == NULL)
+  struct notcurses* nc = notcurses_core_init(&opts, nullptr);
+  if (nc == nullptr)
   {
     fprintf(stderr, "Error initializing Notcurses\n"); // NOLINT
     return EXIT_FAILURE;
@@ -25,7 +25,7 @@ main(void)
   notcurses_render(nc);
 
   struct timespec ts = { .tv_sec = 2, .tv_nsec = 0 };
-  nanosleep(&ts, NULL);
+  nanosleep(&ts, nullptr);
 
   notcurses_stop(nc);
 
@@ -45,7 +45,7 @@ typedef struct
 static int
 get_playing_app(char* app_name, size_t len)
 {
-  DBusConnection* conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+  DBusConnection* conn = dbus_bus_get(DBUS_BUS_SESSION, nullptr);
   if (!conn)
     return -1;
 
@@ -55,7 +55,7 @@ get_playing_app(char* app_name, size_t len)
                                                   "ListNames");
 
   DBusMessage* reply =
-    dbus_connection_send_with_reply_and_block(conn, msg, 1000, NULL);
+    dbus_connection_send_with_reply_and_block(conn, msg, 1000, nullptr);
   dbus_message_unref(msg);
 
   if (!reply)
@@ -70,7 +70,7 @@ get_playing_app(char* app_name, size_t len)
 
   while (dbus_message_iter_get_arg_type(&array_iter) == DBUS_TYPE_STRING)
   {
-    const char* name = NULL;
+    const char* name = nullptr;
     dbus_message_iter_get_basic(&array_iter, &name);
 
     if (strncmp(name, "org.mpris.MediaPlayer2.", 23) == 0)
@@ -91,8 +91,8 @@ get_playing_app(char* app_name, size_t len)
                                &property,
                                DBUS_TYPE_INVALID);
 
-      DBusMessage* check_reply =
-        dbus_connection_send_with_reply_and_block(conn, check_msg, 500, NULL);
+      DBusMessage* check_reply = dbus_connection_send_with_reply_and_block(
+        conn, check_msg, 500, nullptr);
       dbus_message_unref(check_msg);
 
       if (check_reply)
@@ -107,7 +107,7 @@ get_playing_app(char* app_name, size_t len)
             if (dbus_message_iter_get_arg_type(&variant_iter) ==
                 DBUS_TYPE_STRING)
             {
-              const char* status = NULL;
+              const char* status = nullptr;
               dbus_message_iter_get_basic(&variant_iter, &status);
 
               if (strcmp(status, "Playing") == 0)
@@ -136,7 +136,7 @@ get_playing_app(char* app_name, size_t len)
 static void
 get_metadata(const char* app_name, TrackInfo* info)
 {
-  DBusConnection* conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+  DBusConnection* conn = dbus_bus_get(DBUS_BUS_SESSION, nullptr);
   if (!conn)
     return;
 
@@ -159,7 +159,7 @@ get_metadata(const char* app_name, TrackInfo* info)
                            DBUS_TYPE_INVALID);
 
   DBusMessage* reply =
-    dbus_connection_send_with_reply_and_block(conn, msg, 1000, NULL);
+    dbus_connection_send_with_reply_and_block(conn, msg, 1000, nullptr);
   dbus_message_unref(msg);
 
   if (!reply)
@@ -184,7 +184,7 @@ get_metadata(const char* app_name, TrackInfo* info)
         {
           dbus_message_iter_recurse(&array_iter, &dict_iter);
 
-          char* key = NULL;
+          char* key = nullptr;
           dbus_message_iter_get_basic(&dict_iter, &key);
           dbus_message_iter_next(&dict_iter);
 
@@ -196,7 +196,7 @@ get_metadata(const char* app_name, TrackInfo* info)
             if (strcmp(key, "xesam:title") == 0 &&
                 dbus_message_iter_get_arg_type(&value_iter) == DBUS_TYPE_STRING)
             {
-              char* val = NULL;
+              char* val = nullptr;
               dbus_message_iter_get_basic(&value_iter, &val);
               strlcpy(info->title, val, sizeof(info->title));
             }
@@ -210,7 +210,7 @@ get_metadata(const char* app_name, TrackInfo* info)
               if (dbus_message_iter_get_arg_type(&artist_iter) ==
                   DBUS_TYPE_STRING)
               {
-                char* val = NULL;
+                char* val = nullptr;
                 dbus_message_iter_get_basic(&artist_iter, &val);
                 strlcpy(info->artist, val, sizeof(info->artist));
               }
@@ -245,7 +245,7 @@ get_metadata(const char* app_name, TrackInfo* info)
                            &property_position,
                            DBUS_TYPE_INVALID);
 
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 1000, NULL);
+  reply = dbus_connection_send_with_reply_and_block(conn, msg, 1000, nullptr);
   dbus_message_unref(msg);
 
   if (reply)
