@@ -9,6 +9,50 @@
 
 #include "metadata_utils.h"
 
+void
+render_progress_bar(char* buffer,
+                    size_t len,
+                    int64_t position_ms,
+                    int64_t duration_ms,
+                    int width)
+{
+  if (duration_ms <= 0 || len < 10)
+    return;
+
+  int filled = (position_ms * width) / duration_ms;
+  if (filled > width)
+    filled = width;
+  if (filled < 0)
+    filled = 0;
+
+  int pos_sec = position_ms / 1000;
+  int dur_sec = duration_ms / 1000;
+  int pos_min = pos_sec / 60;
+  int pos_s = pos_sec % 60;
+  int dur_min = dur_sec / 60;
+  int dur_s = dur_sec % 60;
+
+  // int percent = (position_ms * 100) / duration_ms;
+
+  int pos = 0;
+  pos += snprintf(buffer + pos, len - pos, "[");
+
+  for (int i = 0; i < width; i++)
+  {
+    if (pos >= (int)len - 1)
+      break;
+    pos += snprintf(buffer + pos, len - pos, i < filled ? "█" : "░");
+  }
+
+  pos += snprintf(buffer + pos,
+                  len - pos,
+                  "] (%02d:%02d / %02d:%02d)",
+                  pos_min,
+                  pos_s,
+                  dur_min,
+                  dur_s);
+}
+
 int
 main(void)
 {
@@ -25,6 +69,7 @@ main(void)
 
   TrackInfo info = { 0 };
   char app_name[256] = { 0 };
+  char progress_bar[256] = { 0 };
 
   while (true)
   {
@@ -47,11 +92,13 @@ main(void)
       ncplane_cursor_move_yx(std, 3, 0);
       ncplane_printf(std, "Artist: %s", info.artist[0] ? info.artist : "N/A");
 
+      render_progress_bar(progress_bar,
+                          sizeof(progress_bar),
+                          info.position_ms,
+                          info.duration_ms,
+                          30);
       ncplane_cursor_move_yx(std, 4, 0);
-      ncplane_printf(std, "Duration: %lld ms", (long long)info.duration_ms);
-
-      ncplane_cursor_move_yx(std, 5, 0);
-      ncplane_printf(std, "Position: %lld ms", (long long)info.position_ms);
+      ncplane_putstr(std, progress_bar);
 
       notcurses_render(nc);
     }
