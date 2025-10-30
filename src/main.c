@@ -28,6 +28,8 @@ main(void)
 
   while (true)
   {
+    ncplane_erase(std);
+
     if (get_playing_app(app_name, sizeof(app_name)) == 0)
     {
       strlcpy(info.app_name, app_name, sizeof(info.app_name));
