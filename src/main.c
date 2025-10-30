@@ -21,41 +21,55 @@ main(void)
   }
 
   struct ncplane* std = notcurses_stdplane(nc);
+  notcurses_inputready_fd(nc);
 
   TrackInfo info = { 0 };
   char app_name[256] = { 0 };
 
-  if (get_playing_app(app_name, sizeof(app_name)) == 0)
+  while (true)
   {
-    strlcpy(info.app_name, app_name, sizeof(info.app_name));
-    get_metadata(app_name, &info);
+    if (get_playing_app(app_name, sizeof(app_name)) == 0)
+    {
+      strlcpy(info.app_name, app_name, sizeof(info.app_name));
+      get_metadata(app_name, &info);
 
-    ncplane_putstr(std, "Now Playing:");
-    ncplane_cursor_move_yx(std, 0, 0);
+      ncplane_cursor_move_yx(std, 0, 0);
+      ncplane_putstr(std, "Now Playing:");
 
-    ncplane_printf(std, "App: %s", info.app_name);
-    ncplane_cursor_move_yx(std, 1, 0);
+      ncplane_cursor_move_yx(std, 1, 0);
+      ncplane_printf(std, "App: %s", info.app_name);
 
-    ncplane_printf(std, "Title: %s", info.title[0] ? info.title : "N/A");
-    ncplane_cursor_move_yx(std, 2, 0);
+      ncplane_cursor_move_yx(std, 2, 0);
+      ncplane_printf(std, "Title: %s", info.title[0] ? info.title : "N/A");
 
-    ncplane_printf(std, "Artist: %s", info.artist[0] ? info.artist : "N/A");
-    ncplane_cursor_move_yx(std, 3, 0);
+      ncplane_cursor_move_yx(std, 3, 0);
+      ncplane_printf(std, "Artist: %s", info.artist[0] ? info.artist : "N/A");
 
-    ncplane_printf(std, "Duration: %lld ms", (long long)info.duration_ms);
-    ncplane_cursor_move_yx(std, 4, 0);
+      ncplane_cursor_move_yx(std, 4, 0);
+      ncplane_printf(std, "Duration: %lld ms", (long long)info.duration_ms);
 
-    ncplane_printf(std, "Position: %lld ms", (long long)info.position_ms);
+      ncplane_cursor_move_yx(std, 5, 0);
+      ncplane_printf(std, "Position: %lld ms", (long long)info.position_ms);
 
-    notcurses_render(nc);
+      notcurses_render(nc);
+    }
+    else
+    {
+      ncplane_erase(std);
+      ncplane_putstr(std, "No media player is currently playing.\n");
+      notcurses_render(nc);
+    }
+
+    struct timespec ts = { .tv_sec = 1, .tv_nsec = 0 };
+    unsigned ch;
+    ncinput ni;
+    if ((ch = notcurses_get(nc, &ts, &ni)) != (unsigned)-1)
+    {
+      if (ch == 'q')
+        break;
+    }
+    nanosleep(&ts, NULL);
   }
-  else
-  {
-    printf("No media player is currently playing.\n");
-  };
-
-  struct timespec ts = { .tv_sec = 5, .tv_nsec = 0 };
-  nanosleep(&ts, NULL);
 
   notcurses_stop(nc);
   return EXIT_SUCCESS;
