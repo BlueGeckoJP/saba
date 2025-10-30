@@ -9,35 +9,19 @@
 
 #include "metadata_utils.h"
 
-/*
 int
 main(void)
 {
-  notcurses_options opts = {};
-  struct notcurses* nc = notcurses_core_init(&opts, nullptr);
+  notcurses_options opts = { 0 };
+  struct notcurses* nc = notcurses_core_init(&opts, NULL);
   if (nc == nullptr)
   {
-    fprintf(stderr, "Error initializing Notcurses\n"); // NOLINT
+    fprintf(stderr, "Error initializing Notcurses\n");
     return EXIT_FAILURE;
   }
 
   struct ncplane* std = notcurses_stdplane(nc);
 
-  ncplane_putstr(std, "Hello, world!\n");
-  notcurses_render(nc);
-
-  struct timespec ts = { .tv_sec = 2, .tv_nsec = 0 };
-  nanosleep(&ts, nullptr);
-
-  notcurses_stop(nc);
-
-  return EXIT_SUCCESS;
-}
-*/
-
-int
-main(void)
-{
   TrackInfo info = { 0 };
   char app_name[256] = { 0 };
 
@@ -46,16 +30,33 @@ main(void)
     strlcpy(info.app_name, app_name, sizeof(info.app_name));
     get_metadata(app_name, &info);
 
-    printf("App: %s\n", info.app_name);
-    printf("Title: %s\n", info.title[0] ? info.title : "N/A");
-    printf("Artist: %s\n", info.artist[0] ? info.artist : "N/A");
-    printf("Duration: %lld ms\n", (long long)info.duration_ms);
-    printf("Position: %lld ms\n", (long long)info.position_ms);
+    ncplane_putstr(std, "Now Playing:");
+    ncplane_cursor_move_yx(std, 0, 0);
+
+    ncplane_printf(std, "App: %s", info.app_name);
+    ncplane_cursor_move_yx(std, 1, 0);
+
+    ncplane_printf(std, "Title: %s", info.title[0] ? info.title : "N/A");
+    ncplane_cursor_move_yx(std, 2, 0);
+
+    ncplane_printf(std, "Artist: %s", info.artist[0] ? info.artist : "N/A");
+    ncplane_cursor_move_yx(std, 3, 0);
+
+    ncplane_printf(std, "Duration: %lld ms", (long long)info.duration_ms);
+    ncplane_cursor_move_yx(std, 4, 0);
+
+    ncplane_printf(std, "Position: %lld ms", (long long)info.position_ms);
+
+    notcurses_render(nc);
   }
   else
   {
     printf("No media player is currently playing.\n");
-  }
+  };
 
+  struct timespec ts = { .tv_sec = 5, .tv_nsec = 0 };
+  nanosleep(&ts, NULL);
+
+  notcurses_stop(nc);
   return EXIT_SUCCESS;
 }
